@@ -79,8 +79,4 @@ jobs:
           command: |
             ~/apictl import api --file ./SampleAPI --environment dev -k --rotate-revision
 
-workflows:
-  version: 2
-  deploy:
-    jobs:
-      - deploy_api
+
