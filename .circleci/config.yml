@@ -40,11 +40,7 @@ jobs:
             # Set timeout for apictl commands
             export APICTL_TIMEOUT=120
 
-      # Step 3: Check network connectivity (optional)
-      - run:
-          name: Check Network Connectivity
-          command: |
-            ping -c 4 520e-203-94-95-14.ngrok-free.app
+   
 
       # Step 4: Check APIM URL (local test)
       - run:
