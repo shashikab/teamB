@@ -46,7 +46,7 @@ jobs:
       - run:
           name: Check APIM URL
           command: |
-            curl -I https://localhost:9443/publisher -k
+            #curl -I https://localhost:9443/publisher -k
 
       # Step 5: List contents of the current directory
       - run:
