@@ -1,5 +1,4 @@
 version: 2.1
-
 workflows:
   testing:
     jobs:
@@ -8,8 +7,6 @@ jobs:
   runner-test:
     machine: true
     resource_class: shashika/demo
-  
-
     steps:
       # Step 1: Check out the repository code.
       - checkout
