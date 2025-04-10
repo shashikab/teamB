@@ -3,10 +3,10 @@ version: 2.1
 jobs:
   deploy_api:
     macos:
-      xcode: "11.0.0"   # This tells CircleCI to use a macOS machine with Xcode 11.0.0 installed.
+      xcode: "13.2.1"   # Updated Xcode version supported by CircleCI
     working_directory: ~/repo
     steps:
-      # Step 1: Check out the repository code from your GitHub project.
+      # Step 1: Check out the repository code from GitHub.
       - checkout
 
       # Step 2: Install apictl.
@@ -17,9 +17,9 @@ jobs:
             curl -L -o apictl.tar.gz "https://github.com/wso2/product-apim-tooling/releases/download/v4.4.0/apictl-4.4.0-darwin-arm64.tar.gz"
             # Extract the tarball
             tar -xzvf apictl.tar.gz
-            # List files to see where the binary is
+            # List extracted files for debugging
             ls -la
-            # Check if the binary is in the current folder or in a subfolder
+            # Check if the binary is in the current folder or inside an "apictl" folder
             if [ -f "./apictl" ]; then
               echo "Found apictl binary in current directory."
               sudo mv ./apictl /usr/local/bin/apictl
@@ -32,57 +32,39 @@ jobs:
             fi
             # Make the binary executable
             chmod +x /usr/local/bin/apictl
-            # Update PATH so that subsequent steps can use apictl
+            # Update PATH so that apictl is available in later steps
             export PATH=/usr/local/bin:$PATH
             echo "/usr/local/bin" >> $BASH_ENV
             echo "Installed apictl version:"
             apictl version
-            # Set a timeout for apictl commands (optional)
+            # Set a timeout variable for apictl commands
             export APICTL_TIMEOUT=120
 
-      # Step 3: Check network connectivity (for example, ping an ngrok address)
+      # Step 3: Check network connectivity (example ping to an ngrok address)
       - run:
           name: Check Network Connectivity
           command: |
             ping -c 4 520e-203-94-95-14.ngrok-free.app
 
-      # Step 4: Check APIM URL by making a header-only request.
+      # Step 4: Check APIM URL (test the local APIM publisher URL)
       - run:
           name: Check APIM URL
           command: |
             curl -I https://localhost:9443/publisher -k
 
-      # Step 5: List the contents of the current directory.
+      # Step 5: List the contents of the current directory
       - run:
           name: List Directory Contents
           command: ls -la
 
-      # Step 6: Configure the APIM environment.
+      # Step 6: Configure the APIM environment
       - run:
           name: Configure APIM Environment
           command: |
-            # Remove any previously set environment named 'dev'
+            # Remove any previous "dev" environment setting; ignore errors if not found.
             apictl remove env dev || true
             export APICLIENT_TIMEOUT=120
-            # Add a new environment named 'dev'. Adjust the URL if needed.
+            # Add a new environment named "dev" pointing to your local APIM
             apictl add env dev --apim https://localhost:9443
 
-      # Step 7: Log in to APIM.
-      - run:
-          name: Login to APIM
-          command: |
-            echo "Logging in to APIM..."
-            apictl version
-            echo "admin" | apictl login dev --insecure -u admin --password-stdin -k
-
-      # Step 8: Import the API project into APIM.
-      - run:
-          name: Import API Project
-          command: |
-            apictl import api --file ./SampleAPI --environment dev -k --rotate-revision
-
-workflows:
-  version: 2
-  deploy:
-    jobs:
-      - deploy_api
+      # Step
