@@ -4,7 +4,7 @@ jobs:
   deploy_api:
     macos:
       xcode: "13.2.1"              # Use the specified Xcode version
-      resource_class: "macos.m1.large"  # Set a valid resource class for macOS jobs
+      resource_class: "macos.m1.xlarge"  # Set a valid resource class for macOS jobs
     working_directory: ~/repo
     steps:
       # Step 1: Check out the repository code from your Git repository.
