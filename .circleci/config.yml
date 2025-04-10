@@ -47,6 +47,7 @@ jobs:
           name: Check APIM URL
           command: |
             #curl -I https://localhost:9443/publisher -k
+            curl -I https://8eb8-203-94-95-14.ngrok-free.app
 
       # Step 5: List contents of the current directory
       - run:
