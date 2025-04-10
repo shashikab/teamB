@@ -1,16 +1,10 @@
 version: 2.1
-workflows:
-  testing:
-    jobs:
-      - runner-test
+
 jobs:
-  runner-test:
+  deploy_api:
+    # Use a self-hosted machine executor instead of docker.
     machine: true
-    resource_class: shashika/demo
-    
-     deploy_api:
-    docker:
-      - image: cimg/base:stable   # This is a Linux image with common utilities.
+    resource_class: shashika/demo   # Use your self-hosted runner's resource class.
     working_directory: ~/repo
     steps:
       # Step 1: Check out the repository code.
@@ -27,7 +21,7 @@ jobs:
             tar -xzvf apictl.tar.gz -C /tmp/apictl
             # List extracted files for debugging
             ls -la /tmp/apictl
-            # Check if the binary is directly available or inside a folder (adjust if necessary)
+            # Check if the binary is in /tmp/apictl/apictl/apictl or in another folder.
             if [ -f "/tmp/apictl/apictl/apictl" ]; then
               echo "Found apictl binary in /tmp/apictl/apictl."
               mv /tmp/apictl/apictl/apictl ~/apictl
@@ -39,38 +33,37 @@ jobs:
               exit 1
             fi
             chmod +x ~/apictl
-            # Add the directory containing the binary to the PATH
+            # Add the directory containing the binary to the PATH (persist for this session)
             echo "export PATH=~/apictl:$PATH" >> ~/.bashrc
             export PATH=~/apictl:$PATH
             echo "Installed apictl version:"
             ~/apictl version
-            # Set timeout for apictl commands
+            # Set a timeout variable for apictl commands
             export APICTL_TIMEOUT=120
 
-
-
-      # Step 4: Check APIM URL (local test)
+      # Step 3: Check APIM URL (local test)
       - run:
           name: Check APIM URL
           command: |
-            #curl -I https://localhost:9443/publisher -k
-            curl -I https://8eb8-203-94-95-14.ngrok-free.app
+            curl -I https://localhost:9443/publisher -k
 
-      # Step 5: List contents of the current directory
+      # Step 4: List contents of the current directory
       - run:
           name: List Directory Contents
           command: |
             ls -la
 
-      # Step 6: Configure the APIM environment
+      # Step 5: Configure the APIM Environment
       - run:
           name: Configure APIM Environment
           command: |
+            # Remove any previously configured 'dev' environment; ignore errors if not present.
             ~/apictl remove env dev || true
             export APICLIENT_TIMEOUT=120
-            ~/apictl add env dev --apim https://8eb8-203-94-95-14.ngrok-free.app
+            # Add a new 'dev' environment pointing to your local APIM instance.
+            ~/apictl add env dev --apim https://localhost:9443
 
-      # Step 7: Login to APIM
+      # Step 6: Login to APIM
       - run:
           name: Login to APIM
           command: |
@@ -78,10 +71,14 @@ jobs:
             ~/apictl version
             echo "admin" | ~/apictl login dev --insecure -u admin --password-stdin -k
 
-      # Step 8: Import the API project into APIM.
+      # Step 7: Import the API Project into APIM
       - run:
           name: Import API Project
           command: |
             ~/apictl import api --file ./SampleAPI --environment dev -k --rotate-revision
 
-
+workflows:
+  version: 2
+  testing:
+    jobs:
+      - deploy_api
