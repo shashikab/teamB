@@ -68,7 +68,7 @@ jobs:
           command: |
             echo "Logging in to APIM..."
             ~/apictl version
-            echo "admin" | ~/apictl login dev --insecure -u admin -p admin -k
+            echo "admin" | ~/apictl login dev --insecure -u admin --password-stdin -k
 
       # Step 8: Import the API project into APIM.
       - run:
