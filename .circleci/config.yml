@@ -21,9 +21,9 @@ jobs:
             # List extracted files for debugging
             ls -la /tmp/apictl
             # Check if the binary is directly available or inside a folder (adjust if necessary)
-            if [ -f "/tmp/apictl/apictl" ]; then
-              echo "Found apictl binary in /tmp/apictl."
-              mv /tmp/apictl/apictl ~/apictl
+            if [ -f "/tmp/apictl/apictl/apictl" ]; then
+              echo "Found apictl binary in /tmp/apictl/apictl."
+              mv /tmp/apictl/apictl/apictl ~/apictl
             elif [ -f "/tmp/apictl/some-folder/apictl" ]; then
               echo "Found apictl binary in /tmp/apictl/some-folder."
               mv /tmp/apictl/some-folder/apictl ~/apictl
@@ -40,7 +40,7 @@ jobs:
             # Set timeout for apictl commands
             export APICTL_TIMEOUT=120
 
-   
+
 
       # Step 4: Check APIM URL (local test)
       - run:
