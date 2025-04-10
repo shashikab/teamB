@@ -1,31 +1,75 @@
-# Use the latest 2.1 version of CircleCI pipeline process engine.
-# See: https://circleci.com/docs/configuration-reference
 version: 2.1
 
-# Define a job to be invoked later in a workflow.
-# See: https://circleci.com/docs/jobs-steps/#jobs-overview & https://circleci.com/docs/configuration-reference/#jobs
 jobs:
-  say-hello:
-    # Specify the execution environment. You can specify an image from Docker Hub or use one of our convenience images from CircleCI's Developer Hub.
-    # See: https://circleci.com/docs/executor-intro/ & https://circleci.com/docs/configuration-reference/#executor-job
+  deploy_api:
     docker:
-      # Specify the version you desire here
-      # See: https://circleci.com/developer/images/image/cimg/base
-      - image: cimg/base:current
-
-    # Add steps to the job
-    # See: https://circleci.com/docs/jobs-steps/#steps-overview & https://circleci.com/docs/configuration-reference/#steps
+      - image: cimg/base:stable
+    working_directory: ~/repo
     steps:
-      # Checkout the code as the first step.
       - checkout
       - run:
-          name: "Say hello"
-          command: "echo Hello, World!"
+          name: Install apictl
+          command: |
+            echo "Downloading apictl Linux binary..."
+            curl -L -o apictl.tar.gz "https://github.com/wso2/product-apim-tooling/releases/download/v4.4.1/apictl-4.4.1-linux-i586.tar.gz"
+            # Create a temporary directory for extraction
+            mkdir -p /tmp/apictl
+            tar -xzvf apictl.tar.gz -C /tmp/apictl
+            # List extracted files for debugging
+            ls -la /tmp/apictl
+            # Adjusted path to find the apictl binary
+            if [ -f "/tmp/apictl/apictl/apictl" ]; then
+              echo "Found apictl binary in /tmp/apictl/apictl."
+              mv /tmp/apictl/apictl/apictl ~/apictl
+            else
+              echo "apictl binary not found!"
+              exit 1
+            fi
+            chmod +x ~/apictl
+            # Add the directory containing the binary to the PATH
+            echo "export PATH=~/apictl:$PATH" >> ~/.bashrc
+            export PATH=~/apictl:$PATH
+            echo "Installed apictl version:"
+            ~/apictl version
+            # Set timeout for apictl commands
+            export APICTL_TIMEOUT=120
 
-# Orchestrate jobs using workflows
-# See: https://circleci.com/docs/workflows/ & https://circleci.com/docs/configuration-reference/#workflows
+      - run:
+          name: Check Network Connectivity
+          command: |
+            ping -c 4 520e-203-94-95-14.ngrok-free.app
+
+      - run:
+          name: Check APIM URL
+          command: |
+            curl -I https://localhost:9443/publisher -k
+
+      - run:
+          name: List Directory Contents
+          command: |
+            ls -la
+
+      - run:
+          name: Configure APIM Environment
+          command: |
+            ~/apictl remove env dev || true
+            export APICLIENT_TIMEOUT=120
+            ~/apictl add env dev --apim https://localhost:9443
+
+      - run:
+          name: Login to APIM
+          command: |
+            echo "Logging in to APIM..."
+            ~/apictl version
+            echo "admin" | ~/apictl login dev --insecure -u admin --password-stdin -k
+
+      - run:
+          name: Import API Project
+          command: |
+            ~/apictl import api --file ./SampleAPI --environment dev -k --rotate-revision
+
 workflows:
-  say-hello-workflow: # This is the name of the workflow, feel free to change it to better match your workflow.
-    # Inside the workflow, you define the jobs you want to run.
+  version: 2
+  deploy:
     jobs:
-      - say-hello
+      - deploy_api
