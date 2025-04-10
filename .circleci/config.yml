@@ -3,10 +3,13 @@ version: 2.1
 jobs:
   deploy_api:
     docker:
-      - image: cimg/base:stable
+      - image: cimg/base:stable   # This is a Linux image with common utilities.
     working_directory: ~/repo
     steps:
+      # Step 1: Check out the repository code.
       - checkout
+
+      # Step 2: Install apictl (Linux version)
       - run:
           name: Install apictl
           command: |
@@ -17,10 +20,13 @@ jobs:
             tar -xzvf apictl.tar.gz -C /tmp/apictl
             # List extracted files for debugging
             ls -la /tmp/apictl
-            # Adjusted path to find the apictl binary
+            # Check if the binary is directly available or inside a folder (adjust if necessary)
             if [ -f "/tmp/apictl/apictl/apictl" ]; then
               echo "Found apictl binary in /tmp/apictl/apictl."
               mv /tmp/apictl/apictl/apictl ~/apictl
+            elif [ -f "/tmp/apictl/some-folder/apictl" ]; then
+              echo "Found apictl binary in /tmp/apictl/some-folder."
+              mv /tmp/apictl/some-folder/apictl ~/apictl
             else
               echo "apictl binary not found!"
               exit 1
@@ -34,21 +40,21 @@ jobs:
             # Set timeout for apictl commands
             export APICTL_TIMEOUT=120
 
-      - run:
-          name: Check Network Connectivity
-          command: |
-            ping -c 4 520e-203-94-95-14.ngrok-free.app
 
+
+      # Step 4: Check APIM URL (local test)
       - run:
           name: Check APIM URL
           command: |
             curl -I https://localhost:9443/publisher -k
 
+      # Step 5: List contents of the current directory
       - run:
           name: List Directory Contents
           command: |
             ls -la
 
+      # Step 6: Configure the APIM environment
       - run:
           name: Configure APIM Environment
           command: |
@@ -56,6 +62,7 @@ jobs:
             export APICLIENT_TIMEOUT=120
             ~/apictl add env dev --apim https://localhost:9443
 
+      # Step 7: Login to APIM
       - run:
           name: Login to APIM
           command: |
@@ -63,6 +70,7 @@ jobs:
             ~/apictl version
             echo "admin" | ~/apictl login dev --insecure -u admin --password-stdin -k
 
+      # Step 8: Import the API project into APIM.
       - run:
           name: Import API Project
           command: |
