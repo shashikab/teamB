@@ -7,6 +7,11 @@ jobs:
   runner-test:
     machine: true
     resource_class: shashika/demo
+    
+     deploy_api:
+    docker:
+      - image: cimg/base:stable   # This is a Linux image with common utilities.
+    working_directory: ~/repo
     steps:
       # Step 1: Check out the repository code.
       - checkout
