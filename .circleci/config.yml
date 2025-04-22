@@ -4,7 +4,7 @@ jobs:
     machine: true
     resource_class: shashika/demo1
     steps:
-      - run: echo "Hi I'm on Runners!"
+      - run: echo "Hi I'm on Runners !"
 
       # Step 1: Check out the repository code.
       - checkout
