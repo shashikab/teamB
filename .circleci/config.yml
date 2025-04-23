@@ -13,10 +13,8 @@ jobs:
           name: Lint API Spec with Spectral
           command: |
             echo "🔍 Installing Spectral CLI and linting API spec…"
-            # Install Spectral locally to avoid permission issues
-            npm install @stoplight/spectral-cli
-            # Run Spectral against your API YAML, fail on any error-level violation
-            npx spectral lint ./SampleAPI/api.yaml --fail-severity error
+            # Use npx to run Spectral without global installation
+            npx @stoplight/spectral-cli lint ./SampleAPI/api.yaml --fail-severity error
 
       # Step 2: Install apictl (Linux version)
       - run:
