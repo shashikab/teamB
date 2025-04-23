@@ -1,0 +1,7 @@
+rules:
+  info-description:
+    description: "Every API must have a non-empty info.description."
+    given: "$.info.description"     # Look at the 'description' field under 'info'
+    severity: error                 # Treat missing or empty as an error
+    then:
+      function: truthy              # Value must be present and truthy
