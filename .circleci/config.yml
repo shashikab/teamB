@@ -1,20 +1,29 @@
 version: 2.1
-
 jobs:
-  deploy_api:
-    docker:
-      - image: cimg/base:stable   # This is a Linux image with common utilities.
-    working_directory: ~/repo
+  runner-test:
+    machine: true
+    resource_class: shashika/demo1
     steps:
+      - run: echo "Hi I'm on Runners !"
+
       # Step 1: Check out the repository code.
       - checkout
+  
+      - run:
+          name: Lint API Spec with Spectral
+          command: |
+            echo "🔍 Installing Spectral CLI and linting API spec…"
+            # Install Spectral locally to avoid permission issues
+            npm install @stoplight/spectral-cli
+            # Run Spectral against your API YAML, fail on any error-level violation
+            npx spectral lint ./SampleAPI/api.yaml --fail-severity error
 
       # Step 2: Install apictl (Linux version)
       - run:
           name: Install apictl
           command: |
             echo "Downloading apictl Linux binary..."
-            curl -L -o apictl.tar.gz "https://github.com/wso2/product-apim-tooling/releases/download/v4.4.1/apictl-4.4.1-linux-i586.tar.gz"
+            curl -L -o apictl.tar.gz "https://github.com/wso2/product-apim-tooling/releases/download/v4.4.1/apictl-4.4.1-darwin-arm64.tar.gz"
             # Create a temporary directory for extraction
             mkdir -p /tmp/apictl
             tar -xzvf apictl.tar.gz -C /tmp/apictl
@@ -46,7 +55,7 @@ jobs:
       - run:
           name: Check APIM URL
           command: |
-            #curl -I https://localhost:9443/publisher -k
+            curl -I https://localhost:9443/publisher -k
 
       # Step 5: List contents of the current directory
       - run:
@@ -60,7 +69,7 @@ jobs:
           command: |
             ~/apictl remove env dev || true
             export APICLIENT_TIMEOUT=120
-            ~/apictl add env dev --apim https://8eb8-203-94-95-14.ngrok-free.app
+            ~/apictl add env dev --apim https://localhost:9443
 
       # Step 7: Login to APIM
       - run:
@@ -75,9 +84,8 @@ jobs:
           name: Import API Project
           command: |
             ~/apictl import api --file ./SampleAPI --environment dev -k --rotate-revision
-
 workflows:
   version: 2
-  deploy:
+  testing:
     jobs:
-      - deploy_api
+      - runner-test
