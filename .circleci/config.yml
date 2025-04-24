@@ -12,38 +12,38 @@ jobs:
       # Step 1: Check out the repository code.
       - checkout
 
-      # Step 2: Lint your OpenAPI spec with Spectral standalone
+      # Step 2: Install Node.js (via Homebrew) so we can use npx
+      - run:
+          name: Ensure Node.js is installed
+          command: |
+            if ! command -v node >/dev/null; then
+              echo "Node.js not found; installing via Homebrew..."
+              brew update
+              brew install node
+            else
+              echo "Node.js already installed: $(node -v)"
+            fi
+
+      # Step 3: Lint your OpenAPI spec with Spectral via npx
       - run:
           name: Lint API Spec with Spectral
           command: |
-            echo "🔍 Downloading Spectral standalone binary and linting API spec…"
-            # Detect OS (linux|darwin)
-            OS=$(uname | tr '[:upper:]' '[:lower:]')
-            # The GitHub release only publishes x64 builds, even on Apple Silicon.
-            if [ "$OS" = "darwin" ]; then
-              ASSET="spectral-darwin-x64"
-            else
-              ASSET="spectral-linux-x64"
-            fi
-            VERSION="6.15.0"
-            URL="https://github.com/stoplightio/spectral/releases/download/v${VERSION}/${ASSET}"
-            echo "Fetching Spectral from $URL"
-            curl -fL -o ./spectral "$URL"
-
-            chmod +x ./spectral
-
-            # Run Spectral using your .spectral.yml ruleset
-            ./spectral lint ./SampleAPI/api.yaml \
+            echo "🔍 Running Spectral lint via npx…"
+            # Ensure the correct Node.js version is used
+            nvm install 18.18.0
+            nvm use 18.18.0
+            # npx will download & invoke Spectral on-the-fly, using your local .spectral.yml
+            npx @stoplight/spectral-cli@6 lint ./SampleAPI/api.yaml \
               --ruleset .spectral.yml \
               --fail-severity error
 
-      # Step 3: Install apictl
+      # Step 4: Install apictl
       - run:
           name: Install apictl
           command: |
             echo "Downloading apictl binary..."
             curl -L -o apictl.tar.gz \
-              "https://github.com/wso2/product-apim-tooling/releases/download/v4.4.1/apictl-4.4.1-darwin-arm64.tar.gz"
+              "https://github.com/wso2/product-apim-tooling/releases/download/v4.4.1/apictl-4.4.1-darwin-amd64.tar.gz"
             mkdir -p /tmp/apictl
             tar -xzvf apictl.tar.gz -C /tmp/apictl
             if [ -f "/tmp/apictl/apictl/apictl" ]; then
@@ -59,17 +59,17 @@ jobs:
             echo "Installed apictl version:" && ~/apictl version
             export APICTL_TIMEOUT=120
 
-      # Step 4: Check APIM URL (local test)
+      # Step 5: Check APIM URL (local test)
       - run:
           name: Check APIM URL
           command: curl -I https://localhost:9443/publisher -k
 
-      # Step 5: List directory contents
+      # Step 6: List directory contents
       - run:
           name: List Directory Contents
           command: ls -la
 
-      # Step 6: Configure the APIM environment
+      # Step 7: Configure the APIM environment
       - run:
           name: Configure APIM Environment
           command: |
@@ -77,7 +77,7 @@ jobs:
             export APICLIENT_TIMEOUT=120
             ~/apictl add env dev --apim https://localhost:9443
 
-      # Step 7: Login to APIM
+      # Step 8: Login to APIM
       - run:
           name: Login to APIM
           command: |
@@ -85,7 +85,7 @@ jobs:
             ~/apictl version
             echo "admin" | ~/apictl login dev --insecure -u admin --password-stdin -k
 
-      # Step 8: Import the API project
+      # Step 9: Import the API project
       - run:
           name: Import API Project
           command: |
