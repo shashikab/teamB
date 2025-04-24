@@ -16,7 +16,7 @@ jobs:
             # Install Spectral globally
             npm install -g @stoplight/spectral-cli
             # Run Spectral against your API YAML, fail on any error-level violation
-            spectral lint ./SampleAPI/api.yaml --fail-severity error
+            spectral lint ./SampleAPI/api.yaml --ruleset .spectral.yml -fail-severity error
 
       # Step 2: Install apictl (Linux version)
       - run:
