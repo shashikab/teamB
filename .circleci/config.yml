@@ -19,12 +19,8 @@ jobs:
             echo "🔍 Downloading Spectral standalone binary and linting API spec…"
             # Detect OS (linux|darwin)
             OS=$(uname | tr '[:upper:]' '[:lower:]')
-            # The GitHub release only publishes x64 builds, even on Apple Silicon.
-            if [ "$OS" = "darwin" ]; then
-              ASSET="spectral-darwin-x64"
-            else
-              ASSET="spectral-linux-x64"
-            fi
+            # Always use the x64 build, since that's what the GitHub release provides
+            ASSET="spectral-${OS}-x64"
             VERSION="6.15.0"
             URL="https://github.com/stoplightio/spectral/releases/download/v${VERSION}/${ASSET}"
             echo "Fetching Spectral from $URL"
@@ -43,7 +39,7 @@ jobs:
           command: |
             echo "Downloading apictl binary..."
             curl -L -o apictl.tar.gz \
-              "https://github.com/wso2/product-apim-tooling/releases/download/v4.4.1/apictl-4.4.1-darwin-arm64.tar.gz"
+              "https://github.com/wso2/product-apim-tooling/releases/download/v4.4.1/apictl-4.4.1-darwin-amd64.tar.gz"
             mkdir -p /tmp/apictl
             tar -xzvf apictl.tar.gz -C /tmp/apictl
             if [ -f "/tmp/apictl/apictl/apictl" ]; then
