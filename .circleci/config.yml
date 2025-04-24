@@ -12,26 +12,19 @@ jobs:
       # Step 1: Check out the repository code.
       - checkout
 
-      # Step 2: Lint your OpenAPI spec with Spectral standalone (OS-agnostic download)
+      # Step 2: Lint your OpenAPI spec with Spectral via the official install script
       - run:
           name: Lint API Spec with Spectral
           command: |
-            echo "🔍 Downloading Spectral standalone binary and linting API spec…"
-            # Detect OS
-            OS=$(uname | tr '[:upper:]' '[:lower:]')
-            # Choose the correct Spectral binary name for GitHub's "latest/download" endpoint
-            if [ "$OS" = "darwin" ]; then
-              ASSET="spectral-macos"
-            else
-              ASSET="spectral-linux"
-            fi
-            URL="https://github.com/stoplightio/spectral/releases/latest/download/${ASSET}"
-            echo "Fetching $URL"
-            curl -fL -o ./spectral "$URL"
+            echo "🔍 Installing Spectral and linting API spec…"
+            # Fetch and run the Spectral installer (it auto-detects OS/ARCH)
+            curl -sL https://raw.githubusercontent.com/stoplightio/spectral/master/scripts/install.sh \
+              | bash -s -- -b . v6.15.0
 
+            # The above places 'spectral' binary in the current directory.
             chmod +x ./spectral
 
-            # Run Spectral using your .spectral.yml ruleset
+            # Run Spectral using your custom ruleset
             ./spectral lint ./SampleAPI/api.yaml \
               --ruleset .spectral.yml \
               --fail-severity error
@@ -86,7 +79,7 @@ jobs:
             ~/apictl version
             echo "admin" | ~/apictl login dev --insecure -u admin --password-stdin -k
 
-      # Step 8: Import the API project into APIM
+      # Step 8: Import the API project into APIM.
       - run:
           name: Import API Project
           command: |
