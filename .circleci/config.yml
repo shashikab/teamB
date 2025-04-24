@@ -12,24 +12,17 @@ jobs:
       # Step 1: Check out the repository code.
       - checkout
 
-      # Step 2: Lint your OpenAPI spec with Spectral standalone
+      # Step 2: Lint your OpenAPI spec with Spectral (Docker)
       - run:
-          name: Lint API Spec with Spectral
+          name: Lint API Spec with Spectral via Docker
           command: |
-            echo "🔍 Downloading Spectral standalone binary and linting API spec…"
-            # Detect OS (linux|darwin)
-            OS=$(uname | tr '[:upper:]' '[:lower:]')
-            # Always use the x64 build, since that's what the GitHub release provides
-            ASSET="spectral-${OS}-x64"
-            VERSION="6.15.0"
-            URL="https://github.com/stoplightio/spectral/releases/download/v${VERSION}/${ASSET}"
-            echo "Fetching Spectral from $URL"
-            curl -fL -o ./spectral "$URL"
-
-            chmod +x ./spectral
-
-            # Run Spectral using your .spectral.yml ruleset
-            ./spectral lint ./SampleAPI/api.yaml \
+            echo "🔍 Running Spectral lint via Docker…"
+            # Pull and run the official Spectral image (v6) to lint your spec using your ruleset.
+            docker run --rm \
+              -v "$PWD":/work \
+              -w /work \
+              stoplight/spectral:6 \
+              lint ./SampleAPI/api.yaml \
               --ruleset .spectral.yml \
               --fail-severity error
 
@@ -81,7 +74,7 @@ jobs:
             ~/apictl version
             echo "admin" | ~/apictl login dev --insecure -u admin --password-stdin -k
 
-      # Step 8: Import the API project
+      # Step 8: Import the API project into APIM
       - run:
           name: Import API Project
           command: |
