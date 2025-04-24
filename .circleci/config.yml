@@ -12,7 +12,7 @@ jobs:
       # Step 1: Check out the repository code.
       - checkout
 
-      # Step 2: Lint your OpenAPI spec with Spectral standalone
+      # Step 2: Lint your OpenAPI spec with the Spectral standalone binary
       - run:
           name: Lint API Spec with Spectral
           command: |
@@ -20,16 +20,13 @@ jobs:
             # Detect OS (linux|darwin) and ARCH (x64|arm64)
             OS=$(uname | tr '[:upper:]' '[:lower:]')
             ARCH=$(uname -m | sed 's/^x86_64$/x64/; s/^arm64$/arm64/')
-            VERSION="6.10.0"
-            ASSET="spectral-${OS}-${ARCH}.tar.gz"
-            URL="https://github.com/stoplightio/spectral/releases/download/v${VERSION}/${ASSET}"
+            VERSION="6.15.0"  # or your desired version
+            BINARY="spectral-${OS}-${ARCH}"
+            URL="https://github.com/stoplightio/spectral/releases/download/v${VERSION}/${BINARY}"
             echo "Fetching $URL"
-            curl -L -o spectral.tar.gz "$URL"
+            curl -L -o ./spectral "$URL"
 
-            # Extract and move the binary
-            mkdir -p /tmp/spectral
-            tar -xzvf spectral.tar.gz -C /tmp/spectral
-            mv /tmp/spectral/spectral ./spectral
+            # Make it executable
             chmod +x ./spectral
 
             # Run Spectral using your .spectral.yml ruleset
@@ -37,25 +34,24 @@ jobs:
               --ruleset .spectral.yml \
               --fail-severity error
 
-      # Step 3: Install apictl (Linux version)
+      # Step 3: Install apictl (macOS/Linux version)
       - run:
           name: Install apictl
           command: |
-            echo "Downloading apictl Linux binary..."
+            echo "Downloading apictl binary..."
             curl -L -o apictl.tar.gz \
               "https://github.com/wso2/product-apim-tooling/releases/download/v4.4.1/apictl-4.4.1-darwin-arm64.tar.gz"
             mkdir -p /tmp/apictl
             tar -xzvf apictl.tar.gz -C /tmp/apictl
-            ls -la /tmp/apictl
             if [ -f "/tmp/apictl/apictl/apictl" ]; then
               mv /tmp/apictl/apictl/apictl ~/apictl
-            elif [ -f "/tmp/apictl/some-folder/apictl" ]; then
-              mv /tmp/apictl/some-folder/apictl ~/apictl
+            elif [ -f "/tmp/apictl/apictl" ]; then
+              mv /tmp/apictl/apictl ~/apictl
             else
               echo "apictl binary not found!" && exit 1
             fi
             chmod +x ~/apictl
-            echo "export PATH=~/apictl:\$PATH" >> ~/.bashrc
+            echo 'export PATH=~/apictl:$PATH' >> ~/.bashrc
             export PATH=~/apictl:$PATH
             echo "Installed apictl version:" && ~/apictl version
             export APICTL_TIMEOUT=120
@@ -88,7 +84,7 @@ jobs:
             ~/apictl version
             echo "admin" | ~/apictl login dev --insecure -u admin --password-stdin -k
 
-      # Step 8: Import the API project into APIM.
+      # Step 8: Import the API project into APIM
       - run:
           name: Import API Project
           command: |
