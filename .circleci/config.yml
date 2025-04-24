@@ -12,11 +12,22 @@ jobs:
       - run:
           name: Lint API Spec with Spectral
           command: |
-            echo "🔍 Installing Spectral CLI and linting API spec…"
-            # Use npm install with --unsafe-perm to bypass permission issues
-            npm install -g @stoplight/spectral-cli --unsafe-perm
-            # Run Spectral against your API YAML, fail on any error-level violation
-            spectral lint ./SampleAPI/api.yaml --ruleset .spectral.yml -fail-severity error
+            echo "🔍 Downloading Spectral standalone binary and linting API spec…"
+            # Detect OS (linux|darwin) and ARCH (x64|arm64)
+            OS=$(uname | tr '[:upper:]' '[:lower:]')
+            ARCH=$(uname -m | sed 's/^x86_64$/x64/; s/^arm64$/arm64/')
+            # Choose the Spectral release version you want to use
+            VERSION="6.10.0"
+            # Download the appropriate binary
+            curl -L -o ./spectral \
+              "https://github.com/stoplightio/spectral/releases/download/v${VERSION}/spectral-${OS}-${ARCH}.tar.gz"
+            tar -xzvf ./spectral
+            chmod +x ./spectral
+
+            # Run Spectral using your ruleset (.spectral.yml at repo root)
+            ./spectral lint ./SampleAPI/api.yaml \
+              --ruleset .spectral.yml \
+              --fail-severity error
 
       # Step 2: Install apictl (Linux version)
       - run:
