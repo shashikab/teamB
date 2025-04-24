@@ -35,9 +35,14 @@ jobs:
             [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm
             nvm install 18.18.0
             nvm use 18.18.0
+            # Ensure the .spectral.yml file exists
+            if [ ! -f "$HOME/circleci/.spectral.yml" ]; then
+              echo "Error: .spectral.yml file not found at $HOME/circleci/.spectral.yml"
+              exit 1
+            fi
             # npx will download & invoke Spectral on-the-fly, using your local .spectral.yml
             npx @stoplight/spectral-cli@6 lint ./SampleAPI/api.yaml \
-              --ruleset .spectral.yml \
+              --ruleset $HOME/circleci/.spectral.yml \
               --fail-severity error
 
       # Step 4: Install apictl
