@@ -17,11 +17,15 @@ jobs:
           name: Lint API Spec with Spectral
           command: |
             echo "🔍 Downloading Spectral standalone binary and linting API spec…"
-            # Detect OS and ARCH
+            # Detect OS (linux|darwin)
             OS=$(uname | tr '[:upper:]' '[:lower:]')
-            ARCH=$(uname -m | sed 's/^x86_64$/x64/; s/^arm64$/arm64/')
+            # The GitHub release only publishes x64 builds, even on Apple Silicon.
+            if [ "$OS" = "darwin" ]; then
+              ASSET="spectral-darwin-x64"
+            else
+              ASSET="spectral-linux-x64"
+            fi
             VERSION="6.15.0"
-            ASSET="spectral-${OS}-${ARCH}"
             URL="https://github.com/stoplightio/spectral/releases/download/v${VERSION}/${ASSET}"
             echo "Fetching Spectral from $URL"
             curl -fL -o ./spectral "$URL"
@@ -55,7 +59,7 @@ jobs:
             echo "Installed apictl version:" && ~/apictl version
             export APICTL_TIMEOUT=120
 
-      # Step 4: Check APIM URL
+      # Step 4: Check APIM URL (local test)
       - run:
           name: Check APIM URL
           command: curl -I https://localhost:9443/publisher -k
@@ -65,7 +69,7 @@ jobs:
           name: List Directory Contents
           command: ls -la
 
-      # Step 6: Configure APIM environment
+      # Step 6: Configure the APIM environment
       - run:
           name: Configure APIM Environment
           command: |
