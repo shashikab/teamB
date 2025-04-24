@@ -16,15 +16,20 @@ jobs:
             # Detect OS (linux|darwin) and ARCH (x64|arm64)
             OS=$(uname | tr '[:upper:]' '[:lower:]')
             ARCH=$(uname -m | sed 's/^x86_64$/x64/; s/^arm64$/arm64/')
-            # Choose the Spectral release version you want to use
             VERSION="6.10.0"
-            # Download the appropriate binary
-            curl -L -o ./spectral \
-              "https://github.com/stoplightio/spectral/releases/download/v${VERSION}/spectral-${OS}-${ARCH}.tar.gz"
-            tar -xzvf ./spectral
+            # Build the correct asset name (underscore, with .tar.gz)
+            ASSET="spectral_${OS}_${ARCH}.tar.gz"
+            URL="https://github.com/stoplightio/spectral/releases/download/v${VERSION}/${ASSET}"
+            echo "Fetching ${URL}"
+            curl -L -o spectral.tar.gz "${URL}"
+
+            # Extract and move the binary
+            mkdir -p /tmp/spectral
+            tar -xzvf spectral.tar.gz -C /tmp/spectral
+            mv /tmp/spectral/spectral ./spectral
             chmod +x ./spectral
 
-            # Run Spectral using your ruleset (.spectral.yml at repo root)
+            # Run Spectral using your .spectral.yml ruleset
             ./spectral lint ./SampleAPI/api.yaml \
               --ruleset .spectral.yml \
               --fail-severity error
@@ -59,8 +64,6 @@ jobs:
             ~/apictl version
             # Set timeout for apictl commands
             export APICTL_TIMEOUT=120
-
-
 
       # Step 4: Check APIM URL (local test)
       - run:
