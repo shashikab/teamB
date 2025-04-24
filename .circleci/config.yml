@@ -9,7 +9,7 @@ jobs:
       # Step 1: Check out the repository code.
       - checkout
   
-     - run:
+      - run:
           name: Lint API Spec with Spectral
           command: |
             echo "🔍 Downloading Spectral standalone binary and linting API spec…"
