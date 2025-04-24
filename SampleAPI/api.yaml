@@ -1,161 +1,146 @@
-type: api
-version: v4.5.0
-data:
-  id: 2e6981c0-7c7f-4d8c-91c6-1feec1932de3
-  name: PizzaShackAPI
+openapi: "3.0.0"
+info:
+  title: PizzaShackAPI
   description: This is a simple API for Pizza Shack online pizza delivery store.
-  context: /pizzashack
-  version: 1.0.0
-  provider: admin
-  lifeCycleStatus: PUBLISHED
-  responseCachingEnabled: false
-  cacheTimeout: 300
-  hasThumbnail: false
-  isDefaultVersion: false
-  isRevision: false
-  revisionId: 0
-  enableSchemaValidation: false
-  enableSubscriberVerification: false
-  type: HTTP
-  audiences:
-   - all
-  transport:
-   - http
-   - https
-  tags:
-   - pizza
-  policies:
-   - Unlimited
-  organizationPolicies: []
-  authorizationHeader: Authorization
-  apiKeyHeader: ApiKey
-  securityScheme:
-   - oauth_basic_auth_api_key_mandatory
-   - oauth2
-  visibility: PUBLIC
-  visibleRoles: []
-  visibleTenants: []
-  visibleOrganizations:
-   - carbon.super
-  mediationPolicies: []
-  subscriptionAvailability: CURRENT_TENANT
-  subscriptionAvailableTenants: []
-  additionalProperties: []
-  additionalPropertiesMap: {}
-  accessControl: NONE
-  accessControlRoles: []
-  businessInformation:
-    businessOwner: Jane Roe
-    businessOwnerEmail: marketing@pizzashack.com
-    technicalOwner: John Doe
-    technicalOwnerEmail: architecture@pizzashack.com
-  corsConfiguration:
-    corsConfigurationEnabled: false
-    accessControlAllowOrigins:
-     - '*'
-    accessControlAllowCredentials: false
-    accessControlAllowHeaders:
-     - authorization
-     - Access-Control-Allow-Origin
-     - Content-Type
-     - SOAPAction
-     - apikey
-     - Internal-Key
-    accessControlAllowMethods:
-     - GET
-     - PUT
-     - POST
-     - DELETE
-     - PATCH
-     - OPTIONS
-  websubSubscriptionConfiguration:
-    enable: false
-    secret: ""
-    signingAlgorithm: SHA1
-    signatureHeader: x-hub-signature
-  createdTime: "1745299957276"
-  lastUpdatedTimestamp: "1745299957521"
-  lastUpdatedTime: 2025-04-22 11:02:37.521
-  endpointConfig:
-    endpoint_type: http
-    sandbox_endpoints:
-      url: https://localhost:9443/am/sample/pizzashack/v1/api/
-    production_endpoints:
-      url: https://localhost:9443/am/sample/pizzashack/v1/api/
-  endpointImplementationType: ENDPOINT
-  subtypeConfiguration:
-    subtype: DEFAULT
-  scopes: []
-  operations:
-   -
-    id: ""
-    target: /order
-    verb: POST
-    authType: Application & Application User
-    throttlingPolicy: Unlimited
-    scopes: []
-    usedProductIds: []
-    operationPolicies:
-      request: []
-      response: []
-      fault: []
-   -
-    id: ""
-    target: /menu
-    verb: GET
-    authType: Application & Application User
-    throttlingPolicy: Unlimited
-    scopes: []
-    usedProductIds: []
-    operationPolicies:
-      request: []
-      response: []
-      fault: []
-   -
-    id: ""
-    target: "/order/{orderId}"
-    verb: GET
-    authType: Application & Application User
-    throttlingPolicy: Unlimited
-    scopes: []
-    usedProductIds: []
-    operationPolicies:
-      request: []
-      response: []
-      fault: []
-   -
-    id: ""
-    target: "/order/{orderId}"
-    verb: PUT
-    authType: Application & Application User
-    throttlingPolicy: Unlimited
-    scopes: []
-    usedProductIds: []
-    operationPolicies:
-      request: []
-      response: []
-      fault: []
-   -
-    id: ""
-    target: "/order/{orderId}"
-    verb: DELETE
-    authType: Application & Application User
-    throttlingPolicy: Unlimited
-    scopes: []
-    usedProductIds: []
-    operationPolicies:
-      request: []
-      response: []
-      fault: []
-  categories: []
-  keyManagers:
-   - all
-  advertiseInfo:
-    advertised: false
-    apiOwner: admin
-    vendor: WSO2
-  gatewayVendor: wso2
-  gatewayType: wso2/synapse
-  asyncTransportProtocols: []
-  egress: false
-  organizationId: carbon.super
+  version: "1.0.0"
+  contact:
+    name: Pizza Shack Support
+    email: marketing@pizzashack.com
+
+servers:
+  - url: https://localhost:9443/am/sample/pizzashack/v1/api/
+    description: Production server
+
+paths:
+  /order:
+    post:
+      summary: Create a new order
+      operationId: createOrder
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Order"
+      responses:
+        "200":
+          description: Order created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+
+  /menu:
+    get:
+      summary: Retrieve the menu
+      operationId: getMenu
+      responses:
+        "200":
+          description: Menu retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Menu"
+
+  /order/{orderId}:
+    parameters:
+      - name: orderId
+        in: path
+        description: ID of the order
+        required: true
+        schema:
+          type: string
+
+    get:
+      summary: Get order by ID
+      operationId: getOrderById
+      responses:
+        "200":
+          description: Order details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+
+    put:
+      summary: Update an existing order
+      operationId: updateOrder
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Order"
+      responses:
+        "200":
+          description: Order updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+
+    delete:
+      summary: Delete an order
+      operationId: deleteOrder
+      responses:
+        "204":
+          description: Order deleted successfully
+
+components:
+  schemas:
+    Order:
+      type: object
+      properties:
+        orderId:
+          type: string
+        items:
+          type: array
+          items:
+            type: string
+        total:
+          type: number
+      required:
+        - orderId
+        - items
+
+    Menu:
+      type: object
+      properties:
+        pizzas:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              price:
+                type: number
+      required:
+        - pizzas
+
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+
+    apiKeyAuth:
+      type: apiKey
+      in: header
+      name: ApiKey
+
+    oauth2:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://localhost:9443/oauth2/authorize
+          tokenUrl: https://localhost:9443/oauth2/token
+          scopes: {}
+
+security:
+  - basicAuth: []
+  - apiKeyAuth: []
+  - oauth2: []
+
+tags:
+  - name: pizza
+    description: Operations related to Pizza Shack
