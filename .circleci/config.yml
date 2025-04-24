@@ -12,19 +12,23 @@ jobs:
       # Step 1: Check out the repository code.
       - checkout
 
-      # Step 2: Lint your OpenAPI spec with Spectral via the official install script
+      # Step 2: Lint your OpenAPI spec with Spectral standalone
       - run:
           name: Lint API Spec with Spectral
           command: |
-            echo "🔍 Installing Spectral and linting API spec…"
-            # Fetch and run the Spectral installer (it auto-detects OS/ARCH)
-            curl -sL https://raw.githubusercontent.com/stoplightio/spectral/master/scripts/install.sh \
-              | bash -s -- -b . v6.15.0
+            echo "🔍 Downloading Spectral standalone binary and linting API spec…"
+            # Detect OS and ARCH
+            OS=$(uname | tr '[:upper:]' '[:lower:]')
+            ARCH=$(uname -m | sed 's/^x86_64$/x64/; s/^arm64$/arm64/')
+            VERSION="6.15.0"
+            ASSET="spectral-${OS}-${ARCH}"
+            URL="https://github.com/stoplightio/spectral/releases/download/v${VERSION}/${ASSET}"
+            echo "Fetching Spectral from $URL"
+            curl -fL -o ./spectral "$URL"
 
-            # The above places 'spectral' binary in the current directory.
             chmod +x ./spectral
 
-            # Run Spectral using your custom ruleset
+            # Run Spectral using your .spectral.yml ruleset
             ./spectral lint ./SampleAPI/api.yaml \
               --ruleset .spectral.yml \
               --fail-severity error
@@ -51,19 +55,17 @@ jobs:
             echo "Installed apictl version:" && ~/apictl version
             export APICTL_TIMEOUT=120
 
-      # Step 4: Check APIM URL (local test)
+      # Step 4: Check APIM URL
       - run:
           name: Check APIM URL
-          command: |
-            curl -I https://localhost:9443/publisher -k
+          command: curl -I https://localhost:9443/publisher -k
 
-      # Step 5: List contents of the current directory
+      # Step 5: List directory contents
       - run:
           name: List Directory Contents
-          command: |
-            ls -la
+          command: ls -la
 
-      # Step 6: Configure the APIM environment
+      # Step 6: Configure APIM environment
       - run:
           name: Configure APIM Environment
           command: |
@@ -79,7 +81,7 @@ jobs:
             ~/apictl version
             echo "admin" | ~/apictl login dev --insecure -u admin --password-stdin -k
 
-      # Step 8: Import the API project into APIM.
+      # Step 8: Import the API project
       - run:
           name: Import API Project
           command: |
