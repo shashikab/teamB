@@ -12,21 +12,23 @@ jobs:
       # Step 1: Check out the repository code.
       - checkout
 
-      # Step 2: Lint your OpenAPI spec with the Spectral standalone binary
+      # Step 2: Lint your OpenAPI spec with Spectral standalone (OS-agnostic download)
       - run:
           name: Lint API Spec with Spectral
           command: |
             echo "🔍 Downloading Spectral standalone binary and linting API spec…"
-            # Detect OS (linux|darwin) and ARCH (x64|arm64)
+            # Detect OS
             OS=$(uname | tr '[:upper:]' '[:lower:]')
-            ARCH=$(uname -m | sed 's/^x86_64$/x64/; s/^arm64$/arm64/')
-            VERSION="6.15.0"  # or your desired version
-            BINARY="spectral-${OS}-${ARCH}"
-            URL="https://github.com/stoplightio/spectral/releases/download/v${VERSION}/${BINARY}"
+            # Choose the correct Spectral binary name for GitHub's "latest/download" endpoint
+            if [ "$OS" = "darwin" ]; then
+              ASSET="spectral-macos"
+            else
+              ASSET="spectral-linux"
+            fi
+            URL="https://github.com/stoplightio/spectral/releases/latest/download/${ASSET}"
             echo "Fetching $URL"
-            curl -L -o ./spectral "$URL"
+            curl -fL -o ./spectral "$URL"
 
-            # Make it executable
             chmod +x ./spectral
 
             # Run Spectral using your .spectral.yml ruleset
@@ -34,7 +36,7 @@ jobs:
               --ruleset .spectral.yml \
               --fail-severity error
 
-      # Step 3: Install apictl (macOS/Linux version)
+      # Step 3: Install apictl
       - run:
           name: Install apictl
           command: |
