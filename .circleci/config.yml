@@ -41,7 +41,7 @@ jobs:
               exit 1
             fi
             # npx will download & invoke Spectral on-the-fly, using your local .spectral.yml
-            npx @stoplight/spectral-cli@6 lint ./SampleAPI/api.yaml \
+            npx @stoplight/spectral-cli@6 lint ./SampleAPI/Definitions/swagger.yaml \
               --ruleset $HOME/circleci/.spectral.yml \
               --fail-severity error
 
