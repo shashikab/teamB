@@ -12,6 +12,14 @@ jobs:
       # Step 1: Check out the repository code.
       - checkout
 
+      - run:
+          name: Checkout dev branch
+          command: |
+            echo "⏬ Fetching and checking out 'dev' branch…"
+            # Fetch remote dev into a local branch called dev (overwrite if exists)
+            git fetch origin dev:dev
+            git checkout dev
+
       # Step 2: Install Node.js (via Homebrew) so we can use npx
       - run:
           name: Ensure Node.js is installed
