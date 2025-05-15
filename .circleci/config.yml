@@ -88,8 +88,8 @@ jobs:
             set -e
 
             echo "$output"
-            if echo "$output" | grep -iq WARN; then
-              echo "❌ Dry-run validation failed — found ERROR"
+            if echo "$output" | grep -iq ERROR; then
+              echo "Dry-run validation failed — found ERROR"
               exit 1
             fi
 
