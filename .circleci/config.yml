@@ -79,14 +79,14 @@ jobs:
           name: Validate API (dry-run)
           command: |
             
-            set +e
+        
             output=$(apictl import api \
               --file ./SampleAPI \
               --environment dev \
               -k --update --rotate-revision \
               --dry-run 2>&1)
-            rc=$?
-            set -e
+            
+
             echo "$output"
             if echo "$output" | grep -iq ERROR; then
               echo "Dry-run validation failed — found ERROR"; exit 1
