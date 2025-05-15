@@ -76,8 +76,8 @@ jobs:
       # Step 9: Import the API project
       # Validate API with dry-run and fail on ERROR
       - run:
-    name: Validate API (dry-run)
-    command: |
+          name: Validate API (dry-run)
+          command: |
       # disable “exit on error” so we can capture return code & output
       set +e
 
