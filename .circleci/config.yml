@@ -78,7 +78,7 @@ jobs:
           command: |
             # Temporarily disable exit-on-error to capture the dry-run output
             set +e
-            output=$(apictl import api \
+            output=$(~/apictl import api \
               --file ./SampleAPI \
               --environment dev \
               -k --rotate-revision \
