@@ -24,7 +24,6 @@ jobs:
               echo "Node.js already installed: $(node -v)"
             fi
 
-    
       # Step 4: Install apictl
       - run:
           name: Install apictl
@@ -73,14 +72,33 @@ jobs:
             ~/apictl version
             echo "admin" | ~/apictl login dev --insecure -u admin --password-stdin -k
 
-      # Step 9: Import the API project
-      # Validate API with dry-run and fail on ERROR
+      # Step 9: Import the API project (dry-run with explicit failure)
       - run:
-          name: Import API Project
+          name: Import API Project (dry-run)
           command: |
-            ~/apictl import api --file ./SampleAPI --environment dev -k --rotate-revision --dry-run
+            # Temporarily disable exit-on-error to capture the dry-run output
+            set +e
+            output=$(apictl import api \
+              --file ./SampleAPI \
+              --environment dev \
+              -k --rotate-revision \
+              --dry-run 2>&1)
+            rc=$?
+            # Re-enable exit-on-error
+            set -e
 
-       # Step 10: Import the API project
+            echo "$output"
+            # Fail if the command returned a non-zero exit code
+            if [ $rc -ne 0 ]; then
+              echo "Dry-run command failed with exit code $rc"; exit $rc
+            fi
+            # Fail if the output contains the word ERROR (case-insensitive)
+            if echo "$output" | grep -iq ERROR; then
+              echo "Dry-run validation failed — found ERROR"; exit 1
+            fi
+            echo "Dry-run passed cleanly."
+
+      # Step 10: Import the API project (actual deploy)
       - run:
           name: Import API Project
           command: |
