@@ -76,38 +76,9 @@ jobs:
       # Step 9: Import the API project
       # Validate API with dry-run and fail on ERROR
       - run:
-          name: Validate API (dry-run)
+          name: Import API Project
           command: |
-      # disable “exit on error” so we can capture return code & output
-      set +e
-
-      output=$(apictl import api \
-        --file ./SampleAPI \
-        --environment dev \
-        -k --update --rotate-revision \
-        --dry-run 2>&1)
-      rc=$?
-
-      # re-enable “exit on error”
-      set -e
-
-      echo "$output"
-
-      # if the command itself failed, bail out with its code
-      if [ $rc -ne 0 ]; then
-        echo "❌ Dry-run command failed (exit code $rc)."
-        exit $rc
-      fi
-
-      # or if we see “ERROR” in the output, fail explicitly
-      if echo "$output" | grep -iq ERROR; then
-        echo "❌ Dry-run validation failed — found ERROR"
-        exit 1
-      fi
-
-      echo "✅ Dry-run passed cleanly."
- — found ERROR"; exit 1
-            fi
+            ~/apictl import api --file ./SampleAPI --environment dev -k --rotate-revision --dry-run
 
        # Step 10: Import the API project
       - run:
