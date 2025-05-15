@@ -12,19 +12,7 @@ jobs:
       # Step 1: Check out the repository code.
       - checkout
 
-      # Step 2: Install Node.js (via Homebrew) so we can use npx
-      - run:
-          name: Ensure Node.js is installed
-          command: |
-            if ! command -v node >/dev/null; then
-              echo "Node.js not found; installing via Homebrew..."
-              brew update
-              brew install node
-            else
-              echo "Node.js already installed: $(node -v)"
-            fi
-
-      # Step 4: Install apictl
+      # Step 2: Install apictl
       - run:
           name: Install apictl
           command: |
@@ -46,17 +34,7 @@ jobs:
             echo "Installed apictl version:" && ~/apictl version
             export APICTL_TIMEOUT=120
 
-      # Step 5: Check APIM URL (local test)
-      - run:
-          name: Check APIM URL
-          command: curl -I https://localhost:9443/publisher -k
-
-      # Step 6: List directory contents
-      - run:
-          name: List Directory Contents
-          command: ls -la
-
-      # Step 7: Configure the APIM environment
+      # Step 3: Configure the APIM environment
       - run:
           name: Configure APIM Environment
           command: |
@@ -64,7 +42,7 @@ jobs:
             export APICLIENT_TIMEOUT=120
             ~/apictl add env dev --apim https://localhost:9443
 
-      # Step 8: Login to APIM
+      # Step 4: Login to APIM
       - run:
           name: Login to APIM
           command: |
@@ -72,7 +50,7 @@ jobs:
             ~/apictl version
             echo "admin" | ~/apictl login dev --insecure -u admin --password-stdin -k
 
-      # Step 9: Import the API project (dry-run with explicit failure)
+      # Step 5: Import the API project (dry-run with explicit failure)
       - run:
           name: Import API Project (dry-run)
           command: |
@@ -93,7 +71,7 @@ jobs:
               exit 1
             fi
 
-      # Step 10: Import the API project (actual deploy)
+      # Step 6: Import the API project (actual deploy)
       - run:
           name: Import API Project
           command: |
