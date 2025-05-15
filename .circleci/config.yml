@@ -7,7 +7,7 @@ jobs:
     steps:
       - run:
           name: Greeting
-          command: echo "Hi I'm on Runners 1 ! "
+          command: echo "Hi I'm on Runners ! "
 
       # Step 1: Check out the repository code.
       - checkout
@@ -24,27 +24,7 @@ jobs:
               echo "Node.js already installed: $(node -v)"
             fi
 
-      # Step 3: Lint your OpenAPI spec with Spectral via npx
-      - run:
-          name: Lint API Spec with Spectral
-          command: |
-            echo "🔍 Running Spectral lint via npx…"
-            # Install nvm before using it
-            curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
-            export NVM_DIR="$HOME/.nvm"
-            [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm
-            nvm install 18.18.0
-            nvm use 18.18.0
-            # Ensure the .spectral.yml file exists
-            if [ ! -f "$HOME/circleci/.spectral.yml" ]; then
-              echo "Error: .spectral.yml file not found at $HOME/circleci/.spectral.yml"
-              exit 1
-            fi
-            # npx will download & invoke Spectral on-the-fly, using your local .spectral.yml
-            npx @stoplight/spectral-cli@6 lint ./SampleAPI/Definitions/swagger.yaml \
-              --ruleset $HOME/circleci/.spectral.yml \
-              --fail-severity error
-
+    
       # Step 4: Install apictl
       - run:
           name: Install apictl
@@ -94,6 +74,12 @@ jobs:
             echo "admin" | ~/apictl login dev --insecure -u admin --password-stdin -k
 
       # Step 9: Import the API project
+      - run:
+          name: Import API Project
+          command: |
+            ~/apictl import api --file ./SampleAPI --environment dev -k --rotate-revision --dry-run
+
+       # Step 10: Import the API project
       - run:
           name: Import API Project
           command: |
