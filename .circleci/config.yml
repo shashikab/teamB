@@ -82,7 +82,7 @@ jobs:
               --file ./SampleAPI \
               --environment dev \
               -k --rotate-revision \
-              --dry-run 2>&1)
+              --dry-run)
             rc=$?
             # Re-enable exit-on-error
             set -e
